@@ -7,27 +7,35 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 # Set your paths
-path = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\Scripts\Data\EUobs\extract_netcdf"
+path = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\Scripts\Data\EUobs\extract_netcdf\extract_netcdf"
 os.chdir(path)
 os.getcwd()
 
 from utils import process_catchment
 
-# Path where the ncdf files are stored:
+# Paths used in this script:
 path = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\Data\Meteorological\EObs\datasets\\"
 path_out = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\Data\Meteorological\EObs\timeseries\\"
+shapefile_path = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\GIS\Catchments\EU\GIS\catchments_EU2caravan_v15.shp"
 
 # ncdf file's name:
-nc_file = "rr_ens_mean_0.25deg_reg_v27.0e.nc"
+#nc_file = "rr_ens_mean_0.25deg_reg_v27.0e.nc"
+#variable_name = "rr"
 
-# Set the number of workers for parallel processing
-num_workers = 4
+nc_file = "hargreaves2.nc"
+variable_name = "Hargreaves"
 
 # Read NetCDF data
 with nc.Dataset(path + nc_file, mode='r', format='NETCDF4') as nc_dataset:
     latitude = nc_dataset["latitude"][:]
     longitude = nc_dataset["longitude"][:]
-    values = nc_dataset["rr"][:]
+    values = nc_dataset[variable_name][:]
+
+# Here we do this simple print only for checking our variables' names:
+print("Variables in NetCDF file:", nc_dataset.variables.keys())
+
+# Set the number of workers for parallel processing
+num_workers = 4
 
 # Chunk size for reading NetCDF data
 chunk_size = 100  # Adjust this value based on your available memory
@@ -40,7 +48,6 @@ pixel_extents = np.stack(
 )
 
 # Read shapefile data
-shapefile_path = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\GIS\Catchments\EU\GIS\catchments_EU2caravan_v15.shp"
 shapefile_all = gpd.read_file(shapefile_path)
 
 # Set the CRS of the shapefile's geometry to EPSG:4326 (WGS 84)
@@ -53,8 +60,8 @@ catchmentnames = shapefile_all.Code.tolist()
 # Process catchment polygons in parallel
 start = time.time()
 with ThreadPoolExecutor(max_workers=num_workers) as executor:
-    futures = [executor.submit(process_catchment, catchmentname, shapefile_all, values, latitude, longitude, path_out)
-               for catchmentname in tqdm.tqdm(catchmentnames[35:37])]
+    futures = [executor.submit(process_catchment, catchmentname, shapefile_all, values, latitude, longitude, path_out, variable_name = "pet")
+               for catchmentname in tqdm.tqdm(catchmentnames)]
     
     # Wait for all futures to complete
     for future in futures:
@@ -62,12 +69,3 @@ with ThreadPoolExecutor(max_workers=num_workers) as executor:
 
 end = time.time()
 print("Total time:", end - start)
-
-
-
-
-
-
-
-
-
