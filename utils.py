@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug 14 14:35:14 2023
+Created on Thu Aug 17 15:21:01 2023
 
 @author: nascimth
 """
@@ -114,5 +114,5 @@ def process_catchment(catchmentname, shapefile_all, values, latitude, longitude,
     # Save pixel data and weighted sum data to CSV files
     np.savetxt(path_out+"pixels_"+str(variable_name)+"_"+catchmentname+".csv", pixels_array, delimiter=',')
     np.savetxt(path_out+str(variable_name)+"_"+catchmentname+".csv", timeseries_array, delimiter=',')
-    
+
     print(f"Catchment {catchmentname}. Processed.")

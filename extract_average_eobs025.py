@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Aug 17 15:21:01 2023
+
+@author: nascimth
+"""
+
 import netCDF4 as nc
 import geopandas as gpd
 import numpy as np
