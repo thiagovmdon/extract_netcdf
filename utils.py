@@ -53,7 +53,7 @@ def get_pixel_indices_and_coords(latitude, longitude, polygon):
 chunk_size = 100  # Adjust this value based on your available memory
 
 # Function to process a single catchment polygon
-def process_catchment(catchmentname, shapefile_all, values, latitude, longitude, path_out):
+def process_catchment(catchmentname, shapefile_all, values, latitude, longitude, path_out, variable_name):
     # Retrieve shapefile data and polygon for the given catchment
     shapefile = shapefile_all[shapefile_all.Code == catchmentname]
     polygon = shapefile.geometry.unary_union
@@ -112,5 +112,7 @@ def process_catchment(catchmentname, shapefile_all, values, latitude, longitude,
                               weights_time_series.reshape((len(weights_time_series), 1))))
     
     # Save pixel data and weighted sum data to CSV files
-    np.savetxt(path_out + "pixels_" + catchmentname + ".csv", pixels_array, delimiter=',')
-    np.savetxt(path_out + "rain_" + catchmentname + ".csv", timeseries_array, delimiter=',')
+    np.savetxt(path_out+"pixels_"+str(variable_name)+"_"+catchmentname+".csv", pixels_array, delimiter=',')
+    np.savetxt(path_out+str(variable_name)+"_"+catchmentname+".csv", timeseries_array, delimiter=',')
+    
+    print(f"Catchment {catchmentname}. Processed.")
