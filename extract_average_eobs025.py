@@ -23,14 +23,36 @@ from utils import process_catchment
 # Paths used in this script:
 path = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\Data\Meteorological\EObs\datasets\\"
 path_out = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\Data\Meteorological\EObs\timeseries\\"
-shapefile_path = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\GIS\Catchments\EU\GIS\catchments_EU2caravan_v15.shp"
+shapefile_path = r"C:\Users\nascimth\Documents\Thiago\Eawag\Python\GIS\Catchments\EU\GIS\catchments_EU2caravan_v16.shp"
 
 # ncdf file's name:
-#nc_file = "rr_ens_mean_0.25deg_reg_v27.0e.nc"
-#variable_name = "rr"
+# Precipitation:
+nc_file = "rr_ens_mean_0.25deg_reg_v27.0e.nc"
+variable_name = "rr"
 
-nc_file = "hargreaves2.nc"
-variable_name = "Hargreaves"
+# Potential evapotranspiration:
+#nc_file = "hargreaves2.nc"
+#variable_name = "Hargreaves"
+
+# Mean temperature:
+#nc_file = "tg_ens_mean_0.25deg_reg_v27.0e.nc"
+#variable_name = "tg"
+
+
+"""
+# For Europe and without Iceland:
+lat_min = 34.75
+lat_max = 70.6
+lon_min = -10.5
+lon_max = 45.0
+
+
+# For Iceland:
+lat_min = 63.0
+lat_max = 67.0
+lon_min = -24.5
+lon_max = -10.5
+"""
 
 # Read NetCDF data
 with nc.Dataset(path + nc_file, mode='r', format='NETCDF4') as nc_dataset:
@@ -42,7 +64,7 @@ with nc.Dataset(path + nc_file, mode='r', format='NETCDF4') as nc_dataset:
 print("Variables in NetCDF file:", nc_dataset.variables.keys())
 
 # Set the number of workers for parallel processing
-num_workers = 4
+num_workers = 5
 
 # Chunk size for reading NetCDF data
 chunk_size = 100  # Adjust this value based on your available memory
@@ -67,7 +89,7 @@ catchmentnames = shapefile_all.Code.tolist()
 # Process catchment polygons in parallel
 start = time.time()
 with ThreadPoolExecutor(max_workers=num_workers) as executor:
-    futures = [executor.submit(process_catchment, catchmentname, shapefile_all, values, latitude, longitude, path_out, variable_name = "pet")
+    futures = [executor.submit(process_catchment, catchmentname, shapefile_all, values, latitude, longitude, path_out, variable_name = "rr")
                for catchmentname in tqdm.tqdm(catchmentnames)]
     
     # Wait for all futures to complete
@@ -76,3 +98,5 @@ with ThreadPoolExecutor(max_workers=num_workers) as executor:
 
 end = time.time()
 print("Total time:", end - start)
+
+

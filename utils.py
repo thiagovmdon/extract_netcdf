@@ -9,6 +9,7 @@ import numpy as np
 from shapely.geometry import Polygon
 import geopandas as gpd
 from shapely.geometry import Point
+from geopandas import GeoDataFrame
 
 def get_pixel_indices_and_coords(latitude, longitude, polygon):
     # Create a list to store pixel indices within the polygon
@@ -67,8 +68,25 @@ def process_catchment(catchmentname, shapefile_all, values, latitude, longitude,
         return
 
     # Create pixel polygons and calculate intersection areas
-    pixel_points = [Point(lon, lat) for lat, lon in zip(latitude[pixel_indices[:, 0]], longitude[pixel_indices[:, 1]])]
-    pixel_polygon = gpd.GeoSeries(pixel_points).buffer(0.125)
+    geometries = []
+
+    half_side = 0.125
+    for center_y, center_x in zip(latitude[pixel_indices[:, 0]], longitude[pixel_indices[:, 1]]):
+
+
+        # Calculate coordinates for the square vertices
+        vertices = [
+        (center_x - half_side, center_y - half_side),
+        (center_x + half_side, center_y - half_side),
+        (center_x + half_side, center_y + half_side),
+        (center_x - half_side, center_y + half_side),
+        (center_x - half_side, center_y - half_side)
+        ]
+        square_geometry = Polygon(vertices)
+        geometries.append(square_geometry)
+        
+    pixel_polygon = gpd.GeoSeries(geometries)
+
     intersection_areas = np.array(pixel_polygon.intersection(shapefile.geometry.unary_union).area)
     
     # Calculate weights for the catchment based on intersection areas
@@ -112,7 +130,7 @@ def process_catchment(catchmentname, shapefile_all, values, latitude, longitude,
                               weights_time_series.reshape((len(weights_time_series), 1))))
     
     # Save pixel data and weighted sum data to CSV files
-    np.savetxt(path_out+"pixels_"+str(variable_name)+"_"+catchmentname+".csv", pixels_array, delimiter=',')
+    np.savetxt(path_out+str(variable_name)+"_"+catchmentname+"_pixels"+".csv", pixels_array, delimiter=',')
     np.savetxt(path_out+str(variable_name)+"_"+catchmentname+".csv", timeseries_array, delimiter=',')
 
     print(f"Catchment {catchmentname}. Processed.")
